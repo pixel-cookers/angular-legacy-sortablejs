@@ -26,6 +26,7 @@
 	 * @property  {Object|Array}  models     List of items
 	 * @property  {number}        oldIndex   before sort
 	 * @property  {number}        newIndex   after sort
+	 * @property  {Object}        sortable   the sortable instance
 	 */
 
 	var expando = 'Sortable:ng-sortable';
@@ -44,7 +45,6 @@
 			// Export
 			return {
 				restrict: 'AC',
-				scope: { ngSortable: "=?" },
 				priority: 1001,
 				compile: function ($element, $attr) {
 
@@ -65,7 +65,7 @@
 
 					var rhs = match[2];
 
-					return function postLink(scope, $el) {
+					return function postLink(scope, $el, attrs) {
 						var itemsExpr = $parse(rhs);
 						var getSource = function getSource() {
 							return itemsExpr(scope.$parent) || [];
@@ -73,7 +73,7 @@
 
 
 						var el = $el[0],
-							options = angular.extend(scope.ngSortable || {}, ngSortableConfig),
+							options = angular.extend(scope.$eval(attrs.ngSortable) || {}, ngSortableConfig),
 							watchers = [],
 							offDestroy,
 							sortable
@@ -91,6 +91,7 @@
 								models: source,
 								oldIndex: evt.oldIndex,
 								newIndex: evt.newIndex,
+								sortable: sortable,
 								originalEvent: evt
 							});
 						}
@@ -119,6 +120,7 @@
 								}
 								else {
 									prevItems.splice(oldIndex, 1);
+									removed = null; // clean data from previous event
 								}
 
 								items.splice(newIndex, 0, removed);
